@@ -24,20 +24,25 @@ def write_to_xls(source_file, dest_file):
     row_count = 1
     paras = get_input_xls_file_content(source_file)
     #for row in range(1,len(paras)-50):
+    title=None
+    resolutions = []
+    qna = {}
     for row in range(0,len(paras)):
         para = paras[row]
         for run in para.runs:
             if run.bold:
+                if title:
+                    qna[title] = resolutions
+                    resolutions = []
                 title = run.text
-                # one title can have one solution
             else:
-                resolution = run.text
-        if title and resolution:
-            work_sheet.cell(column=1, row=row_count, value=title)
-            work_sheet.cell(column=2, row=row_count, value=resolution)
+                resolutions.append(run.text)
+
+    for i in qna.keys():            
+        for j in qna[i]:
+            work_sheet.cell(column=1, row=row_count, value=i)
+            work_sheet.cell(column=2, row=row_count, value=j)
             row_count += 1
-            title = None
-            resolution = None
             
     work_book.save(dest_file)
 

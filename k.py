@@ -24,22 +24,32 @@ def write_to_xls(source_file, dest_file):
     row_count = 1
     paras = get_input_xls_file_content(source_file)
     #for row in range(1,len(paras)-50):
+    title=None
+    resolutions = []
+    qna = {}
+    tfs = 1
+    pfs = 0
+    tmpRes = None
     for row in range(0,len(paras)):
         para = paras[row]
+        if para.style.style_id == "Heading4":
+            print("======")
+            print(para.text)
+        """
+        print("*** style: ", para.style.style_id)
+        print("*** font:  ", para.style.font.size)
+        print("*** bold:  ", para.style.font.bold)
+        print("*** italic:", para.style.font.italic)
         for run in para.runs:
-            if run.bold:
-                title = run.text
-                # one title can have one solution
-            else:
-                resolution = run.text
-        if title and resolution:
-            work_sheet.cell(column=1, row=row_count, value=title)
-            work_sheet.cell(column=2, row=row_count, value=resolution)
-            row_count += 1
-            title = None
-            resolution = None
-            
-    work_book.save(dest_file)
+            if run.text == '\n':
+                continue
+            print("==========******====================")
+            print(run.text)
+            print("*** bold: ", run.bold)
+            print("*** style: ", run.style.style_id)
+            print("*** size: ", run.font.size)
+            print("*** quick_style: ", run.style.quick_style)
+        """
 
 if __name__ == "__main__":
     import sys

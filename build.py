@@ -41,9 +41,9 @@ classifier = "NB"  # Supported algorithms # "SVM" # "NB"
 use_grid_search = False  # grid search is used to find hyperparameters. Searching for hyperparameters is time consuming
 remove_stop_words = True  # removes stop words from processed text
 stop_words_lang = 'english'  # used with 'remove_stop_words' and defines language of stop words collection
-use_stemming = False  # word stemming using nltk
-fit_prior = True  # if use_stemming == True then it should be set to False ?? double check
-min_data_per_class = 1  # used to determine number of samples required for each class.Classes with less than that will be excluded from the dataset. default value is 1
+use_stemming = True  # word stemming using nltk
+fit_prior = False  # if use_stemming == True then it should be set to False ?? double check
+min_data_per_class = 0  # used to determine number of samples required for each class.Classes with less than that will be excluded from the dataset. default value is 1
 
 if __name__ == '__main__':
 
@@ -70,6 +70,12 @@ if __name__ == '__main__':
     bytag = dfTickets.groupby(column_to_predict).aggregate(np.count_nonzero)
     tags = bytag[bytag.Title > min_data_per_class].index
     dfTickets = dfTickets[dfTickets[column_to_predict].isin(tags)]
+
+    #x = dfTickets.groupby(['TicketNumber', 'Title']).aggregate(np.count_nonzero)
+    #xt = x[x.Resolution > min_data_per_class].index
+    #dfTickets = dfTickets[dfTickets[column_to_predict].isin(xt)]
+    # one more test
+    dfTickets = dfTickets[dfTickets.Title.str.contains("Ticket") == False]
     print(
         "Shape of dataset after removing classes with less then "
         + str(min_data_per_class) + " rows: "

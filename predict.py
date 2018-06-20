@@ -123,6 +123,7 @@ if __name__ == '__main__':
     print("started")
     # Loading models
     model_ticket_type = pickle.load(open("outputs/Resolution.model", "rb"))
+    #model_ticket_type = pickle.load(open("outputs/HelpTopic.model", "rb"))
     description = input()
     import pudb;pu.db
     predictall(model_ticket_type, description)

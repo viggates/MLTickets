@@ -41,9 +41,9 @@ column_to_predict = "Resolution"
 
 classifier = "NB"  # Supported algorithms # "SVM" # "NB"
 use_grid_search = False  # grid search is used to find hyperparameters. Searching for hyperparameters is time consuming
-remove_stop_words = False  # removes stop words from processed text
+remove_stop_words = True  # removes stop words from processed text
 stop_words_lang = 'english'  # used with 'remove_stop_words' and defines language of stop words collection
-use_stemming = True  # word stemming using nltk
+use_stemming = False  # word stemming using nltk
 fit_prior = False  # if use_stemming == True then it should be set to False ?? double check
 min_data_per_class = 0  # used to determine number of samples required for each class.Classes with less than that will be excluded from the dataset. default value is 1
 
@@ -153,11 +153,24 @@ if __name__ == '__main__':
         train_labels, test_labels = labelData[train_index], labelData[test_index]
 
 #        x = text_clf.fit_transform(df['Review'].values.astype('U'))
-        text_clf = text_clf.fit(train_data.values.astype('U'), train_labels.values.astype('U'))
+###        text_clf = text_clf.fit(train_data.values.astype('U'), train_labels.values.astype('U'))
+        tCounts = count_vect.fit_transform(train_data)
+        tT =  TfidfTransformer()
+        train_tfidf = tT.fit_transform(tCounts)
+        text_clf = MultinomialNB().fit(train_tfidf, train_labels)
+
+        """
+        X_train, X_test, y_train, y_test = train_test_split(df['Consumer_complaint_narrative'], df['Product'], random_state = 0)
+        count_vect = CountVectorizer()
+        X_train_counts = count_vect.fit_transform(X_train)
+        tfidf_transformer = TfidfTransformer()
+        X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+        clf = MultinomialNB().fit(X_train_tfidf, y_train)
+        """
 
         print("Evaluating model")
         # Score and evaluate model on test data using model without hyperparameter tuning
-        predicted = text_clf.predict(test_data.values.astype('U'))
+        predicted = text_clf.predict(count_vect.transform(test_data))
         prediction_acc = np.mean(predicted == test_labels)
         print("Confusion matrix without GridSearch:")
         print(metrics.confusion_matrix(test_labels, predicted))
@@ -200,6 +213,13 @@ if __name__ == '__main__':
             text_clf,
             open(os.path.join(
                 '.', 'outputs', column_to_predict+".model"),
+                'wb'
+            )
+        )
+        pickle.dump(
+            count_vect,
+            open(os.path.join(
+                '.', 'outputs', column_to_predict+"_vect.model"),
                 'wb'
             )
         )

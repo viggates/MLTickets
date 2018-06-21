@@ -12,10 +12,25 @@ from sklearn.pipeline import Pipeline
 import time
 import pickle
 import re
+from nltk.stem.snowball import SnowballStemmer
 # Use with Azure Web Apps
 sys.path.append(".")
 sys.path.append("..")
 
+
+class StemmedCountVectorizer(CountVectorizer):
+    def build_analyzer(self):
+        analyzer = super(StemmedCountVectorizer, self).build_analyzer()
+        stemmer = SnowballStemmer("english", ignore_stopwords=True)
+        return lambda doc: ([stemmer.stem(w) for w in analyzer(doc)])
+
+def predictall1(model_ticket_type, description):
+    count_vect = pickle.load(open("outputs/Resolution_vect.model", "rb"))
+#    count_vect = CountVectorizer(stop_words='english')
+    description = count_vect.transform([description])
+
+    predicted_ticket_type = model_ticket_type.predict(description)
+    print("predicted ticket_type: "+str(predicted_ticket_type))
 
 
 def predictall(model_ticket_type, description):
@@ -126,6 +141,7 @@ if __name__ == '__main__':
     #model_ticket_type = pickle.load(open("outputs/HelpTopic.model", "rb"))
     description = input()
     import pudb;pu.db
-    predictall(model_ticket_type, description)
+#    predictall(model_ticket_type, description)
+    predictall1(model_ticket_type, description)
 
 

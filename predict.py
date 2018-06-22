@@ -27,10 +27,17 @@ class StemmedCountVectorizer(CountVectorizer):
 def predictall1(model_ticket_type, description):
     count_vect = pickle.load(open("outputs/Resolution_vect.model", "rb"))
 #    count_vect = CountVectorizer(stop_words='english')
+    t =  pickle.load(open("outputs/Resolution_trans.model", "rb"))
+    nn =  pickle.load(open("outputs/Resolution_labels.model", "rb"))
     description = count_vect.transform([description])
+    description = t.transform(description)
 
     predicted_ticket_type = model_ticket_type.predict(description)
+    neiD, neiI = model_ticket_type.kneighbors(description)
     print("predicted ticket_type: "+str(predicted_ticket_type))
+    print("Neighbpours: "+str(neiI))
+    for i in neiI:
+        print(nn[i].to_string)
 
 
 def predictall(model_ticket_type, description):

@@ -98,7 +98,6 @@ if __name__ == '__main__':
     dfTickets = dfTickets[dfTickets.Resolution.str.contains("Ticket", case=False) == False]
     dfTickets = dfTickets[dfTickets.Resolution.str.contains("&", case=False) == False]
     dfTickets = dfTickets[dfTickets.Resolution.str.contains("<br", case=False) == False]
-    dfTickets = dfTickets[dfTickets.Resolution.str.contains("<div", case=False) == False]
     #Collaborators
     print(dfTickets.values)
     dfTickets[column_to_predict].dropna(how='any')
@@ -153,21 +152,8 @@ if __name__ == '__main__':
     tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2', encoding='latin-1', ngram_range=(1, 2), stop_words='english')
     data = tfidf.fit_transform(dfTickets.Title).toarray()
 
-    tfidf_transformer = TfidfTransformer()
-    data = tfidf_transformer.fit_transform(data)
-
     kf = KFold(n_splits=10)
     kf.get_n_splits(data)
-
-
-    from sklearn.neighbors import KNeighborsRegressor
-    from sklearn.neighbors import KNeighborsClassifier  
-    # Create the knn model.
-    # Look at the five closest neighbors.
-    knn = KNeighborsClassifier(n_neighbors=5)
-
-    from sklearn.preprocessing import StandardScaler  
-    scaler = StandardScaler()  
 
 
     for train_index, test_index in kf.split(data):
@@ -184,11 +170,7 @@ if __name__ == '__main__':
         text_clf = MultinomialNB().fit(train_tfidf, train_labels)
         """
         
-##        text_clf = MultinomialNB().fit(train_data, train_labels)        
-        #scaler.fit(train_data)
-        #train_data = scaler.transform(train_data)  
-        #test_data = scaler.transform(test_data)  
-        text_clf = knn.fit(train_data, train_labels)
+        text_clf = MultinomialNB().fit(train_data, train_labels)        
 
         """
         X_train, X_test, y_train, y_test = train_test_split(df['Consumer_complaint_narrative'], df['Product'], random_state = 0)
@@ -249,25 +231,9 @@ if __name__ == '__main__':
             )
         )
         pickle.dump(
-            tfidf,
+            count_vect,
             open(os.path.join(
                 '.', 'outputs', column_to_predict+"_vect.model"),
                 'wb'
             )
         )
-        pickle.dump(
-            tfidf_transformer,
-            open(os.path.join(
-                '.', 'outputs', column_to_predict+"_trans.model"),
-                'wb'
-            )
-        )
-        pickle.dump(
-            labelData,
-            open(os.path.join(
-                '.', 'outputs', column_to_predict+"_labels.model"),
-                'wb'
-            )
-        )
-
-

@@ -32,13 +32,16 @@ def predictall1(model_ticket_type, description):
     description = count_vect.transform([description])
     #description = t.transform(description)
 
-    predicted_ticket_type = model_ticket_type.predict(description)
-    neiD, neiI = model_ticket_type.kneighbors(description)
-    print(model_ticket_type.kneighbors_graph(description))
+    predicted_ticket_type = model_ticket_type.predict(description.toarray())
+    #neiD, neiI = model_ticket_type.kneighbors(description)
+    #print(model_ticket_type.kneighbors_graph(description))
     print("predicted ticket_type: "+str(predicted_ticket_type))
-    print("Neighbours: "+str(neiI))
-    for i in neiI:
-        print(nn[i].values)
+
+    xx=model_ticket_type._KNN__predict_proba(description.toarray())[1]
+    print(model_ticket_type.window.get_targets_matrix()[xx])
+    #print("Neighbours: "+str(neiI))
+    #for i in neiI:
+    #    print(nn[i].values)
 
 
 def predictall(model_ticket_type, description):

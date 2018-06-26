@@ -162,24 +162,36 @@ if __name__ == '__main__':
     #tfidf_transformer = TfidfTransformer()
     #data = tfidf_transformer.fit_transform(data)
 
+    from skmultiflow.data.data_stream import DataStream
+    dataM=data.toarray()
+    dff = pd.DataFrame(dataM)
+    dff['Resolution'] = dfTickets['Resolution']
+    stream = DataStream(dff)
+    stream.prepare_for_use()
+
+
+
     kf = KFold(n_splits=10)
-    kf.get_n_splits(data)
+    kf.get_n_splits(stream.X)
 
 
-    from sklearn.neighbors import KNeighborsRegressor
-    from sklearn.neighbors import KNeighborsClassifier  
+    #from sklearn.neighbors import KNeighborsRegressor
+    #from sklearn.neighbors import KNeighborsClassifier  
     # Create the knn model.
     # Look at the five closest neighbors.
-    knn = KNeighborsClassifier(n_neighbors=5, weights='distance')
+    #knn = KNeighborsClassifier(n_neighbors=5, weights='distance')
 
-    from sklearn.preprocessing import StandardScaler  
-    scaler = StandardScaler()  
+    from skmultiflow.classification.lazy.knn import KNN
+    knn = KNN(k=5)
 
+    #from sklearn.preprocessing import StandardScaler  
+    #scaler = StandardScaler()  
 
-    for train_index, test_index in kf.split(data):
+    cc=1
+    for train_index, test_index in kf.split(stream.X):
         print("TRAIN:", train_index, "TEST:", test_index)
-        train_data, test_data = data[train_index], data[test_index]
-        train_labels, test_labels = labelData[train_index], labelData[test_index]
+        train_data, test_data = stream.X[train_index], stream.X[test_index]
+        train_labels, test_labels = stream.y[train_index], stream.y[test_index]
 
         print("*****", test_data.shape, test_labels.shape)
 #        x = text_clf.fit_transform(df['Review'].values.astype('U'))
@@ -194,8 +206,10 @@ if __name__ == '__main__':
 ##        text_clf = MultinomialNB().fit(train_data, train_labels)        
         #scaler.fit(train_data)
         #train_data = scaler.transform(train_data)  
-        #test_data = scaler.transform(test_data)  
-        text_clf = knn.fit(train_data, train_labels)
+        #test_data = scaler.transform(test_data)
+        #train_labels = train_labels.reset_index(drop=True)
+        train_labels = train_labels.reshape((len(train_labels),))
+        text_clf = knn.partial_fit(train_data, train_labels)
 
         """
         X_train, X_test, y_train, y_test = train_test_split(df['Consumer_complaint_narrative'], df['Product'], random_state = 0)
@@ -205,18 +219,19 @@ if __name__ == '__main__':
         X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
         clf = MultinomialNB().fit(X_train_tfidf, y_train)
         """
+        if cc>=5:
+            print("Evaluating model")
+            # Score and evaluate model on test data using model without hyperparameter tuning
+            ###predicted = text_clf.predict(count_vect.transform(test_data))
+            predicted = text_clf.predict(test_data)
+            prediction_acc = np.mean(predicted == test_labels)
+            print("Confusion matrix without GridSearch:")
+            print(metrics.confusion_matrix(test_labels, predicted))
+            print("Mean without GridSearch: " + str(prediction_acc))
 
-        print("Evaluating model")
-        # Score and evaluate model on test data using model without hyperparameter tuning
-        ###predicted = text_clf.predict(count_vect.transform(test_data))
-        predicted = text_clf.predict(test_data)
-        prediction_acc = np.mean(predicted == test_labels)
-        print("Confusion matrix without GridSearch:")
-        print(metrics.confusion_matrix(test_labels, predicted))
-        print("Mean without GridSearch: " + str(prediction_acc))
-
-        print(classification_report(test_labels, predicted,
+            print(classification_report(test_labels, predicted,
                                 target_names=np.unique(test_labels)))
+        cc+=1
 
 
     """
